@@ -43,7 +43,8 @@ export async function runReplayTests(
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
       const errorStack = error instanceof Error ? error.stack : undefined
-      const isDeterminismViolation = error instanceof Error && error.name === 'DeterminismViolationError'
+      const isDeterminismViolation =
+        error instanceof Error && error.name === 'DeterminismViolationError'
 
       if (isDeterminismViolation) {
         determinismViolations++

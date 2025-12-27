@@ -5,10 +5,7 @@ import * as fs from 'fs/promises'
 import * as core from '@actions/core'
 import * as path from 'path'
 
-export async function fetchHistories(
-  config: ActionConfig,
-  client: Client | null
-): Promise<any[]> {
+export async function fetchHistories(config: ActionConfig, client: Client | null): Promise<any[]> {
   const selection = config.selection
 
   // Priority 1: Pre-exported history files
@@ -39,10 +36,7 @@ export async function fetchHistories(
   throw new Error('No valid workflow selection method provided')
 }
 
-async function fetchFromFiles(
-  pattern: string,
-  maxHistories: number
-): Promise<any[]> {
+async function fetchFromFiles(pattern: string, maxHistories: number): Promise<any[]> {
   core.info(`Searching for history files: ${pattern}`)
 
   const files = await glob(pattern, {
@@ -123,11 +117,7 @@ async function fetchByTaskQueue(
   return await fetchByQuery(client, query, maxHistories)
 }
 
-async function fetchByQuery(
-  client: Client,
-  query: string,
-  maxHistories: number
-): Promise<any[]> {
+async function fetchByQuery(client: Client, query: string, maxHistories: number): Promise<any[]> {
   core.info(`Fetching histories with query: ${query}`)
 
   try {

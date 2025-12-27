@@ -2,9 +2,7 @@ import { Connection, Client } from '@temporalio/client'
 import { ActionConfig } from '../config/types'
 import * as core from '@actions/core'
 
-export async function createTemporalConnection(
-  config: ActionConfig
-): Promise<Client | null> {
+export async function createTemporalConnection(config: ActionConfig): Promise<Client | null> {
   // If only using history files, no connection needed
   if (config.selection.historyPath) {
     core.info('Using pre-exported history files - skipping Temporal connection')
@@ -29,9 +27,7 @@ export async function createTemporalConnection(
 
     if (config.temporal.serverRootCACert) {
       core.debug('Using custom server root CA certificate')
-      connectionOptions.tls.serverRootCACertificate = Buffer.from(
-        config.temporal.serverRootCACert
-      )
+      connectionOptions.tls.serverRootCACertificate = Buffer.from(config.temporal.serverRootCACert)
     }
 
     if (config.temporal.serverNameOverride) {

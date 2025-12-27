@@ -7,19 +7,17 @@ export async function generateJobSummary(results: ReplayResults): Promise<void> 
   const { total, successful, failed, determinismViolations } = results
   const successRate = total > 0 ? ((successful / total) * 100).toFixed(1) : '0'
 
-  await core.summary
-    .addHeading('Temporal Replay Test Results', 2)
-    .addTable([
-      [
-        { data: 'Metric', header: true },
-        { data: 'Count', header: true }
-      ],
-      ['Total Workflows', total.toString()],
-      ['✅ Successful', successful.toString()],
-      ['❌ Failed', failed.toString()],
-      ['⚠️ Determinism Violations', determinismViolations.toString()],
-      ['Success Rate', `${successRate}%`]
-    ])
+  await core.summary.addHeading('Temporal Replay Test Results', 2).addTable([
+    [
+      { data: 'Metric', header: true },
+      { data: 'Count', header: true }
+    ],
+    ['Total Workflows', total.toString()],
+    ['✅ Successful', successful.toString()],
+    ['❌ Failed', failed.toString()],
+    ['⚠️ Determinism Violations', determinismViolations.toString()],
+    ['Success Rate', `${successRate}%`]
+  ])
 
   // Add detailed results if there are any failures
   if (failed > 0) {
