@@ -1,0 +1,167 @@
+name: Test Action
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # Unit tests with code coverage
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run format check
+        run: npm run format-check
+
+      - name: Run type check
+        run: npm run build
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Verify dist is up to date
+        run: |
+          npm run package
+          git diff --exit-code dist/
+
+  # Integration test with pre-exported history files
+  integration-test-with-files:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build test workflows
+        run: |
+          cd tests/workflows
+          npm install
+          npm run build
+
+      - name: Test action with pre-exported histories
+        uses: ./
+        with:
+          workflows-path: 'tests/workflows/compiled'
+          workflow-history-path: 'tests/fixtures/*.json'
+          skip-build: true
+          fail-on-replay-error: true
+
+  # Integration test with Temporal server
+  integration-test-with-temporal:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    services:
+      temporal:
+        image: temporalio/auto-setup:latest
+        ports:
+          - 7233:7233
+        env:
+          TEMPORAL_BROADCAST_ADDRESS: 0.0.0.0
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Temporal CLI
+        run: |
+          curl -sSf https://temporal.download/cli.sh | sh
+          sudo mv temporal /usr/local/bin/
+
+      - name: Wait for Temporal server
+        run: |
+          timeout 60 bash -c 'until nc -z localhost 7233; do sleep 1; done'
+          echo "Temporal server is ready"
+
+      - name: Create a test workflow execution
+        run: |
+          # Start a simple workflow to generate history
+          temporal workflow start \
+            --task-queue test-queue \
+            --type simpleWorkflow \
+            --workflow-id test-workflow-$(date +%s) \
+            --input '"World"' \
+            --namespace default
+
+          # Wait for workflow to complete
+          sleep 5
+
+      - name: List workflows to verify
+        run: |
+          temporal workflow list --namespace default
+
+      - name: Build test workflows
+        run: |
+          cd tests/workflows
+          npm install
+          npm run build
+
+      - name: Test action with task queue
+        uses: ./
+        with:
+          workflows-path: 'tests/workflows/compiled'
+          workflow-task-queue: 'test-queue'
+          temporal-address: 'localhost:7233'
+          temporal-namespace: 'default'
+          skip-build: true
+
+  # Matrix test across different environments
+  matrix-test:
+    runs-on: ${{ matrix.os }}
+    needs: unit-tests
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [18, 20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build test workflows
+        run: |
+          cd tests/workflows
+          npm install
+          npm run build
+
+      - name: Test action with files
+        uses: ./
+        with:
+          workflows-path: 'tests/workflows/compiled'
+          workflow-history-path: 'tests/fixtures/*.json'
+          skip-build: true

@@ -1,0 +1,112 @@
+name: 'Temporal Replay Testing'
+description: 'Test Temporal TypeScript workflows for determinism using replay testing'
+author: 'James Gibbons'
+
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  # Connection Configuration
+  temporal-address:
+    description: 'Temporal server address (e.g., localhost:7233 or namespace.tmprl.cloud:7233)'
+    required: false
+    default: 'localhost:7233'
+
+  temporal-namespace:
+    description: 'Temporal namespace'
+    required: false
+    default: 'default'
+
+  temporal-tls-cert:
+    description: 'TLS client certificate (PEM format) for mTLS authentication'
+    required: false
+
+  temporal-tls-key:
+    description: 'TLS client private key (PEM format) for mTLS authentication'
+    required: false
+
+  temporal-tls-cert-path:
+    description: 'Path to TLS client certificate file'
+    required: false
+
+  temporal-tls-key-path:
+    description: 'Path to TLS client private key file'
+    required: false
+
+  temporal-server-root-ca-cert:
+    description: 'Optional server root CA certificate for TLS verification'
+    required: false
+
+  temporal-server-name-override:
+    description: 'Optional server name override for TLS SNI'
+    required: false
+
+  # Workflow Selection
+  workflow-history-path:
+    description: 'Path to pre-exported workflow history JSON file(s). Supports glob patterns (e.g., histories/*.json)'
+    required: false
+
+  workflow-ids:
+    description: 'Comma-separated list of specific workflow IDs to replay'
+    required: false
+
+  workflow-task-queue:
+    description: 'Task queue to fetch workflow histories from'
+    required: false
+
+  workflow-query:
+    description: 'Custom list query for selecting workflows (e.g., "WorkflowType=MyWorkflow AND StartTime > 2024-01-01")'
+    required: false
+
+  max-histories:
+    description: 'Maximum number of workflow histories to replay (safety limit)'
+    required: false
+    default: '100'
+
+  # Workflow Code Configuration
+  workflows-path:
+    description: 'Path to compiled workflows code (relative to repo root)'
+    required: true
+
+  build-command:
+    description: 'Custom build command (overrides auto-detection)'
+    required: false
+
+  skip-build:
+    description: 'Skip the build step (use pre-built code)'
+    required: false
+    default: 'false'
+
+  working-directory:
+    description: 'Working directory for build and workflow execution'
+    required: false
+    default: '.'
+
+  # Output Configuration
+  fail-on-replay-error:
+    description: 'Fail the action if any replay errors occur'
+    required: false
+    default: 'true'
+
+  create-job-summary:
+    description: 'Create GitHub job summary with results'
+    required: false
+    default: 'true'
+
+outputs:
+  total-replays:
+    description: 'Total number of workflow histories replayed'
+
+  successful-replays:
+    description: 'Number of successful replays'
+
+  failed-replays:
+    description: 'Number of failed replays'
+
+  determinism-violations:
+    description: 'Number of determinism violations detected'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

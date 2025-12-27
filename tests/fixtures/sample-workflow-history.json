@@ -1,0 +1,60 @@
+{
+  "workflowId": "test-workflow-123",
+  "runId": "abc-123-def-456",
+  "events": [
+    {
+      "eventId": "1",
+      "eventTime": "2025-01-01T00:00:00Z",
+      "eventType": "WorkflowExecutionStarted",
+      "workflowExecutionStartedEventAttributes": {
+        "workflowType": {
+          "name": "simpleWorkflow"
+        },
+        "taskQueue": {
+          "name": "test-queue"
+        },
+        "input": {
+          "payloads": []
+        }
+      }
+    },
+    {
+      "eventId": "2",
+      "eventTime": "2025-01-01T00:00:01Z",
+      "eventType": "WorkflowTaskScheduled",
+      "workflowTaskScheduledEventAttributes": {
+        "taskQueue": {
+          "name": "test-queue"
+        }
+      }
+    },
+    {
+      "eventId": "3",
+      "eventTime": "2025-01-01T00:00:02Z",
+      "eventType": "WorkflowTaskStarted",
+      "workflowTaskStartedEventAttributes": {
+        "scheduledEventId": "2"
+      }
+    },
+    {
+      "eventId": "4",
+      "eventTime": "2025-01-01T00:00:03Z",
+      "eventType": "WorkflowTaskCompleted",
+      "workflowTaskCompletedEventAttributes": {
+        "scheduledEventId": "2",
+        "startedEventId": "3"
+      }
+    },
+    {
+      "eventId": "5",
+      "eventTime": "2025-01-01T00:00:04Z",
+      "eventType": "WorkflowExecutionCompleted",
+      "workflowExecutionCompletedEventAttributes": {
+        "workflowTaskCompletedEventId": "4",
+        "result": {
+          "payloads": []
+        }
+      }
+    }
+  ]
+}
